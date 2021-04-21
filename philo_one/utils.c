@@ -50,21 +50,21 @@ void p_eat (t_philo *p)
 	// pthread_mutex_lock(&p->m_forks[p->right]);
 	// pthread_mutex_lock(&p->m_forks[p->left]);
 
-	pthread_mutex_unlock(p->m_ego);
-
+//	pthread_mutex_unlock(p->m_ego);
 	pthread_mutex_lock(p->m_write);
 	printf("%lu %d has taken a fork\n", timestamp(p), p->id);
 	printf("%lu %d has taken a fork\n", timestamp(p), p->id);
 	printf("%lu %d is eating\n", timestamp(p), p->id);
 	pthread_mutex_unlock(p->m_write);
 	p->last_eaten = get_time();
+	pthread_mutex_unlock(&(p->alive));
 	usleep(p->eat * 1000);
-	pthread_mutex_lock(p->m_ego);
+//	pthread_mutex_lock(p->m_ego);
 	p->forks[p->right] = 0;
 	p->forks[p->left] = 0;
 	// pthread_mutex_unlock(&p->m_forks[p->right]);
 	// pthread_mutex_unlock(&p->m_forks[p->left]);
-	pthread_mutex_unlock(p->m_ego);
+//	pthread_mutex_unlock(p->m_ego);
 }
 
 unsigned long get_time(void)

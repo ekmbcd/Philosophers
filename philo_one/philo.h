@@ -22,6 +22,7 @@ typedef struct s_philo
 	pthread_mutex_t *m_forks;
 	pthread_mutex_t *m_write;
 	pthread_mutex_t *m_ego;
+	pthread_mutex_t alive;
 }	t_philo;
 
 typedef struct s_table

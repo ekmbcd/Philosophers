@@ -5,24 +5,36 @@ void *metaphysic(void *philo)
 	t_philo *p;
 
 	p = (t_philo *)philo;
-	while (1)
+	while (p->times != 0)
 	{
 		//check if alive
 		//check if left fork is free //check if right fork is free
-		pthread_mutex_lock(p->m_ego);
+
+		pthread_mutex_lock(&(p->m_forks[p->right]));
+		pthread_mutex_lock(&(p->m_forks[p->left]));		
+		pthread_mutex_lock(&(p->alive));
+//		pthread_mutex_lock(p->m_ego);
 		if (p->forks[p->right] == 0 && p->forks[p->left] == 0)
 		{
 			//start eating
 			p_eat(p);
-
+			pthread_mutex_unlock(&(p->m_forks[p->right]));
+			pthread_mutex_unlock(&(p->m_forks[p->left]));
+			(p->times)--;
 			//sleep
 			p_sleep(p);
 		}
 		else
-			pthread_mutex_unlock(p->m_ego);
+		{
+//			pthread_mutex_unlock(p->m_ego);
+			pthread_mutex_unlock(&(p->m_forks[p->right]));
+			pthread_mutex_unlock(&(p->m_forks[p->left]));	
+			pthread_mutex_unlock(&(p->alive));
+		}
+			
 		//stop after p.times eaten
 	}
-
+	//printf(">>DONE\n");
 }
 
 void generate_philos(t_table *t)
@@ -95,8 +107,8 @@ t_table *init(int ac, const char **av)
 	if (ac == 6)
 		t->times = ft_atoi(av[5]);
 	else
-		t->times = 0;
-	if (t->num <= 0 || t->die < 0 || t->eat < 0 || t->sleep < 0 || t->times < 0)
+		t->times = -2;
+	if (t->num <= 0 || t->die < 0 || t->eat < 0 || t->sleep < 0 || t->times == -1)
 	{
 		free(t);
 		return (0);
@@ -111,19 +123,39 @@ t_table *init(int ac, const char **av)
 int starvation(t_table *t)
 {
 	int i;
+	unsigned long now;
+	int done;
 
 	while (1)
 	{
-		i = 0;
-		while (i < t->num)
+		i = -1;
+		done = 0;
+		while (++i < t->num)
 		{
-			if (get_time() - t->philos[i]->last_eaten > t->die)
+			if (t->philos[i]->times == 0)
+				continue;
+			done++;
+			pthread_mutex_lock(&(t->philos[i]->alive));
+			now = get_time();
+			pthread_mutex_unlock(&(t->philos[i]->alive));
+			if (now - t->philos[i]->last_eaten > t->die + 1)
 			{
-				printf("%lu %d died.\n", timestamp(t->philos[i]), i + 1);
+				pthread_mutex_lock(&(t->philos[i]->alive));
+				pthread_mutex_lock(&(t->m_write));
+				//printf("<%lu>\n", now - t->start_time);
+				printf("%lu %d died\n", timestamp(t->philos[i]), i + 1);
+				//all threads should be killed
+				//pthread_mutex_unlock(&(t->philos[i]->alive));
 				return (1);
 			}
-			i++;
+			
 		}
+		if (done == 0)
+		{
+			//printf("yo\n");
+			return (0);
+		}
+			
 	}
 	return(0);
 }
@@ -146,7 +178,7 @@ int main(int argc, char const *argv[])
 	//check aliveness
 	starvation(t);
 	//join?
-	//pthread_join(threads[0], NULL);
+//	pthread_join(threads[0], NULL);
 	//free
 
 	return(0);
