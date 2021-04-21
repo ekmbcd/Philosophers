@@ -45,8 +45,8 @@ void p_sleep(t_philo *p)
 
 void p_eat (t_philo *p)
 {
-	p->forks[p->right] = 1;
-	p->forks[p->left] = 1;
+//	p->forks[p->right] = 1;
+//	p->forks[p->left] = 1;
 	// pthread_mutex_lock(&p->m_forks[p->right]);
 	// pthread_mutex_lock(&p->m_forks[p->left]);
 
@@ -60,8 +60,8 @@ void p_eat (t_philo *p)
 	pthread_mutex_unlock(&(p->alive));
 	usleep(p->eat * 1000);
 //	pthread_mutex_lock(p->m_ego);
-	p->forks[p->right] = 0;
-	p->forks[p->left] = 0;
+//	p->forks[p->right] = 0;
+//	p->forks[p->left] = 0;
 	// pthread_mutex_unlock(&p->m_forks[p->right]);
 	// pthread_mutex_unlock(&p->m_forks[p->left]);
 //	pthread_mutex_unlock(p->m_ego);

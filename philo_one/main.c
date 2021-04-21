@@ -14,23 +14,25 @@ void *metaphysic(void *philo)
 		pthread_mutex_lock(&(p->m_forks[p->left]));		
 		pthread_mutex_lock(&(p->alive));
 //		pthread_mutex_lock(p->m_ego);
-		if (p->forks[p->right] == 0 && p->forks[p->left] == 0)
-		{
+		// if (p->forks[p->right] == 0 && p->forks[p->left] == 0)
+		// {
 			//start eating
-			p_eat(p);
-			pthread_mutex_unlock(&(p->m_forks[p->right]));
-			pthread_mutex_unlock(&(p->m_forks[p->left]));
-			(p->times)--;
-			//sleep
-			p_sleep(p);
-		}
-		else
-		{
-//			pthread_mutex_unlock(p->m_ego);
-			pthread_mutex_unlock(&(p->m_forks[p->right]));
-			pthread_mutex_unlock(&(p->m_forks[p->left]));	
-			pthread_mutex_unlock(&(p->alive));
-		}
+		p_eat(p);
+		pthread_mutex_unlock(&(p->m_forks[p->right]));
+		pthread_mutex_unlock(&(p->m_forks[p->left]));
+		
+		//sleep
+		p_sleep(p);
+		(p->times)--;
+		// }
+// 		else
+// 		{
+// 			printf("yooooo\n");
+// //			pthread_mutex_unlock(p->m_ego);
+// 			pthread_mutex_unlock(&(p->m_forks[p->right]));
+// 			pthread_mutex_unlock(&(p->m_forks[p->left]));	
+// 			pthread_mutex_unlock(&(p->alive));
+// 		}
 			
 		//stop after p.times eaten
 	}
@@ -58,8 +60,8 @@ void generate_philos(t_table *t)
 		t->philos[i]->sleep = t->sleep;
 		t->philos[i]->times = t->times;
 		t->philos[i]->m_forks = t->m_forks;
-		t->philos[i]->forks = t->forks;
-		t->philos[i]->m_ego = &t->m_ego;
+		// t->philos[i]->forks = t->forks;
+		// t->philos[i]->m_ego = &t->m_ego;
 		t->philos[i]->m_write = &t->m_write;
 	}
 }
@@ -78,7 +80,7 @@ void create_forks(t_table *t)
 	}
 }
 
-pthread_t *genesys(t_table *t)
+void *genesys(t_table *t)
 {
 	int i;
 	pthread_t *threads;
@@ -90,7 +92,7 @@ pthread_t *genesys(t_table *t)
 		pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]);
 		i++;
 	}
-	return (threads);
+	//return (threads);
 }
 
 t_table *init(int ac, const char **av)
@@ -138,7 +140,7 @@ int starvation(t_table *t)
 			pthread_mutex_lock(&(t->philos[i]->alive));
 			now = get_time();
 			pthread_mutex_unlock(&(t->philos[i]->alive));
-			if (now - t->philos[i]->last_eaten > t->die + 1)
+			if (now - t->philos[i]->last_eaten > t->die)
 			{
 				pthread_mutex_lock(&(t->philos[i]->alive));
 				pthread_mutex_lock(&(t->m_write));
@@ -152,6 +154,7 @@ int starvation(t_table *t)
 		}
 		if (done == 0)
 		{
+			pthread_mutex_lock(&(t->m_write));
 			//printf("yo\n");
 			return (0);
 		}
@@ -163,7 +166,7 @@ int starvation(t_table *t)
 int main(int argc, char const *argv[])
 {
 	t_table *t;
-	pthread_t *threads;
+	//pthread_t *threads;
 
 	t = init(argc, argv);
 	if (t == 0)
@@ -173,7 +176,7 @@ int main(int argc, char const *argv[])
 	}
 
 	//start threads
-	threads = genesys(t);
+	genesys(t);
 
 	//check aliveness
 	starvation(t);
