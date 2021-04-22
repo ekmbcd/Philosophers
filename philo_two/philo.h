@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <sys/time.h>
 
 typedef struct s_philo
@@ -12,17 +13,13 @@ typedef struct s_philo
 	int	id;
 	unsigned long last_eaten;
 	//int alive;
-	int left;
-	int right;
 	unsigned long start_time;
 	int eat;
 	int sleep;
 	int times;
-//	char *forks;
-	pthread_mutex_t *m_forks;
-	pthread_mutex_t *m_write;
-//	pthread_mutex_t *m_ego;
-	pthread_mutex_t alive;
+	sem_t *forks;
+	sem_t *write;
+	sem_t *alive;
 }	t_philo;
 
 typedef struct s_table
@@ -34,10 +31,8 @@ typedef struct s_table
 	int sleep;
 	int times;
 	t_philo **philos;
-	//char *forks;
-	pthread_mutex_t *m_forks;
-	pthread_mutex_t m_write;
-//	pthread_mutex_t m_ego;
+	sem_t *forks;
+	sem_t *write;
 }	t_table;
 
 

@@ -162,7 +162,7 @@ t_table *init(int ac, const char **av)
 		t->times = ft_atoi(av[5]);
 	else
 		t->times = -2;
-	if (t->num <= 0 || t->die < 0 || t->eat < 0 || t->sleep < 0 || t->times == -1)
+	if (t->num <= 0 || t->die <= 0 || t->eat <= 0 || t->sleep <= 0 || t->times == -1)
 	{
 		free(t);
 		return (0);

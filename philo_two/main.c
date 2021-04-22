@@ -9,73 +9,18 @@ void *metaphysic(void *philo)
 	p = (t_philo *)philo;
 	while (p->times != 0)
 	{
-		//printf("1\n");
-		//check if alive
-		//check if left fork is free //check if right fork is free
-		if(p->id % 2)
-		{
 
-			pthread_mutex_lock(&(p->m_forks[p->right]));
-			pthread_mutex_lock(&(p->m_forks[p->left]));
-		}
-		else
-		{
-			if (start)
-				usleep((p->eat) * 500);
-			pthread_mutex_lock(&(p->m_forks[p->left]));
-			pthread_mutex_lock(&(p->m_forks[p->right]));
-		}
-		//printf("2\n");
-		pthread_mutex_lock(&(p->alive));
-//		pthread_mutex_lock(p->m_ego);
-		// if (p->forks[p->right] == 0 && p->forks[p->left] == 0)
-		// {
-			//start eating
+		if(start && p->id % 2 == 0)
+			usleep((p->eat) * 500);
+		sem_wait(p->forks);
+		sem_wait(p->forks);
+		//sem_wait(p->alive);
 		p_eat(p);
-		// pthread_mutex_lock(p->m_write);
-		// if (p->id % 2)
-		// 	write(1, "Disp\n", 5);
-		// else
-		// 	write(1, "pari\n", 5);
-
-		// pthread_mutex_unlock(p->m_write);
-//		if(p->id % 2)
-//		{
-			//pthread_mutex_lock(p->m_write);
-			pthread_mutex_unlock(&(p->m_forks[p->right]));
-			//printf("%lu %d FORKETTA DESTRA\n", timestamp(p), p->id);
-			pthread_mutex_unlock(&(p->m_forks[p->left]));
-			//printf("%lu %d FORKETTA SINISTRA\n", timestamp(p), p->id);
-			//pthread_mutex_unlock(p->m_write);
-
-		// }
-		// else
-		// {
-		// 	//pthread_mutex_lock(p->m_write);
-		// 	pthread_mutex_unlock(&(p->m_forks[p->right]));
-		// 	//printf("%lu %d FORKETTA DESTRA\n", timestamp(p), p->id);
-		// 	pthread_mutex_unlock(&(p->m_forks[p->left]));
-		// 	//printf("%lu %d FORKETTA SINISTRA\n", timestamp(p), p->id);
-		// 	//pthread_mutex_unlock(p->m_write);
-
-
-		// }
-
-		//sleep
+		sem_post(p->forks);
+		sem_post(p->forks);
 		p_sleep(p);
 		(p->times)--;
 		start = 0;
-		// }
-// 		else
-// 		{
-// 			printf("yooooo\n");
-// //			pthread_mutex_unlock(p->m_ego);
-// 			pthread_mutex_unlock(&(p->m_forks[p->right]));
-// 			pthread_mutex_unlock(&(p->m_forks[p->left]));
-// 			pthread_mutex_unlock(&(p->alive));
-// 		}
-
-		//stop after p.times eaten
 	}
 	//printf(">>DONE\n");
 	return(0);
@@ -93,43 +38,20 @@ void generate_philos(t_table *t)
 		t->philos[i] = malloc(sizeof(t_philo));
 		t->philos[i]->id = i + 1;
 		t->philos[i]->last_eaten = t->start_time;
-		t->philos[i]->right = i;
-		t->philos[i]->left = i + 1;
-		if (i == t->num - 1)
-			t->philos[i]->left = 0;
 		t->philos[i]->start_time = t->start_time;
 		t->philos[i]->eat = t->eat;
 		t->philos[i]->sleep = t->sleep;
 		t->philos[i]->times = t->times;
-		t->philos[i]->m_forks = t->m_forks;
-		// t->philos[i]->forks = t->forks;
+		t->philos[i]->forks = t->forks;
+		t->philos[i]->write = t->write;
+		//sem_init(&t->philos[i]->alive, 0, 1);
+		//sem_unlink("/s_alive");
+		//t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, t->num);
+
 		// t->philos[i]->m_ego = &t->m_ego;
-		t->philos[i]->m_write = &t->m_write;
-		pthread_mutex_init(&t->philos[i]->alive, NULL);
 	}
 }
 
-void create_forks(t_table *t)
-{
-	int i;
-
-	i = 0;
-	//t->forks = malloc(sizeof(char) * t->num);
-	t->m_forks = calloc(t->num + 1, sizeof(pthread_mutex_t));
-	pthread_mutex_init(&t->m_write, NULL);
-	while (i < t->num)
-	{
-		pthread_mutex_init(&t->m_forks[i], NULL);
-		i++;
-	}
-
-
-	// while (i < t->num)
-	// {
-	// 	t->forks[i] = 0;
-	// 	i++;
-	// }
-}
 
 void genesys(t_table *t)
 {
@@ -161,14 +83,18 @@ t_table *init(int ac, const char **av)
 		t->times = ft_atoi(av[5]);
 	else
 		t->times = -2;
-	if (t->num <= 0 || t->die < 0 || t->eat < 0 || t->sleep < 0 || t->times == -1)
+	if (t->num <= 0 || t->die <= 0 || t->eat <= 0 || t->sleep <= 0 || t->times == -1)
 	{
 		free(t);
 		return (0);
 	}
 	t->start_time = get_time();
-	create_forks(t);
-	generate_philos(t);
+	sem_unlink("/s_forks");
+	sem_unlink("/s_write");
+	t->forks = sem_open("/s_forks", O_CREAT, 01411, t->num);
+	t->write = sem_open("/s_write", O_CREAT, 01411, 1);
+	//sem_init(&t->forks, 0, t->num);
+	//sem_init(&t->write, 0, 1);
 	return (t);
 
 }
@@ -189,23 +115,22 @@ int starvation(t_table *t)
 			if (t->philos[i]->times == 0)
 				continue;
 			done++;
-			pthread_mutex_lock(&(t->philos[i]->alive));
+			//sem_wait(t->philos[i]->alive);
 //			now = get_time();
-
 			if (get_time() - t->philos[i]->last_eaten > t->die)
 			{
-				pthread_mutex_lock(&(t->m_write));
+				sem_wait(t->write);
 				//printf("<%lu>\n", now - t->start_time);
 				printf("%lu %d died\n", timestamp(t->philos[i]), i + 1);
 				//all threads should be killed
 				//pthread_mutex_unlock(&(t->philos[i]->alive));
 				return (1);
 			}
-			pthread_mutex_unlock(&(t->philos[i]->alive));
+			//sem_post(t->philos[i]->alive);
 		}
 		if (done == 0)
 		{
-			pthread_mutex_lock(&(t->m_write));
+			//sem_wait(&t->write);
 			//printf("yo\n");
 			return (0);
 		}
@@ -227,11 +152,13 @@ int main(int argc, char const *argv[])
 		printf("Wrong input.\n");
 		return(1);
 	}
+
 	//start threads
 	genesys(t);
 
 	//check aliveness
-	starvation(t);
+	//starvation(t);
+	usleep(10000);
 	//join?
 	//pthread_join(threads[0], NULL);
 	//free
