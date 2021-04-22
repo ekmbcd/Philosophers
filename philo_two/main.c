@@ -143,7 +143,6 @@ void genesys(t_table *t)
 		pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]);
 		i++;
 	}
-	free(threads);
 	//return (threads);
 }
 
@@ -218,7 +217,6 @@ int starvation(t_table *t)
 int main(int argc, char const *argv[])
 {
 	t_table *t;
-	int i;
 	//pthread_t *threads;
 
 
@@ -237,17 +235,7 @@ int main(int argc, char const *argv[])
 	//join?
 	//pthread_join(threads[0], NULL);
 	//free
-	i = 0;
-	while (i < t->num)
-	{
-		pthread_mutex_destroy(&t->philos[i]->alive);
-		free(t->philos[i]);
-		pthread_mutex_destroy(&t->m_forks[i++]);
-	}
-	pthread_mutex_destroy(&t->m_write);
-	free(t->philos);
-	free(t->m_forks);
-	free(t);
+
 	return(0);
 
 }
