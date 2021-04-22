@@ -7,6 +7,9 @@ void *metaphysic(void *philo)
 
 	start = 1;
 	p = (t_philo *)philo;
+	printf("yo\n");
+	printf("%d\n", p->times);
+
 	while (p->times != 0)
 	{
 
@@ -43,7 +46,7 @@ void generate_philos(t_table *t)
 		t->philos[i]->sleep = t->sleep;
 		t->philos[i]->times = t->times;
 		t->philos[i]->forks = t->forks;
-		t->philos[i]->write = t->write;
+		//t->philos[i]->write = t->write;
 		//sem_init(&t->philos[i]->alive, 0, 1);
 		//sem_unlink("/s_alive");
 		//t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, t->num);
@@ -91,6 +94,8 @@ t_table *init(int ac, const char **av)
 	t->start_time = get_time();
 	sem_unlink("/s_forks");
 	sem_unlink("/s_write");
+	t->forks = malloc(sizeof(sem_t));
+	t->write = malloc(sizeof(sem_t));
 	t->forks = sem_open("/s_forks", O_CREAT, 01411, t->num);
 	t->write = sem_open("/s_write", O_CREAT, 01411, 1);
 	//sem_init(&t->forks, 0, t->num);
@@ -155,7 +160,7 @@ int main(int argc, char const *argv[])
 
 	//start threads
 	genesys(t);
-
+	printf("genesys done\n");
 	//check aliveness
 	//starvation(t);
 	usleep(10000);

@@ -19,7 +19,7 @@ typedef struct s_philo
 	int times;
 	sem_t *forks;
 	sem_t *write;
-	sem_t *alive;
+	// sem_t *alive;
 }	t_philo;
 
 typedef struct s_table
