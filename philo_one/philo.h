@@ -34,7 +34,7 @@ typedef struct s_table
 	int sleep;
 	int times;
 	t_philo **philos;
-	char *forks;
+	//char *forks;
 	pthread_mutex_t *m_forks;
 	pthread_mutex_t m_write;
 //	pthread_mutex_t m_ego;
