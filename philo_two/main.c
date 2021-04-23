@@ -19,7 +19,7 @@ void *metaphysic(void *philo)
 		sem_wait(p->forks);
 		sem_wait(p->forks);
 		sem_post(p->tunnel);
-		//sem_wait(p->alive);
+		sem_wait(p->alive);
 		p_eat(p);
 		//printf("yo\n");
 		sem_post(p->forks);
@@ -52,8 +52,8 @@ void generate_philos(t_table *t)
 		t->philos[i]->write = t->write;
 		t->philos[i]->tunnel = t->tunnel;
 		//sem_init(&t->philos[i]->alive, 0, 1);
-		//sem_unlink("/s_alive");
-		//t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, t->num);
+		sem_unlink("/s_alive");
+		t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, t->num);
 
 		// t->philos[i]->m_ego = &t->m_ego;
 	}
@@ -72,6 +72,7 @@ void genesys(t_table *t)
 		pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]);
 		i++;
 	}
+	free(threads);
 	//return (threads);
 }
 
@@ -99,9 +100,9 @@ t_table *init(int ac, const char **av)
 	sem_unlink("/s_forks");
 	sem_unlink("/s_write");
 	sem_unlink("/s_tunnel");
-	t->forks = malloc(sizeof(sem_t));
-	t->write = malloc(sizeof(sem_t));
-	t->tunnel = malloc(sizeof(sem_t));
+	//t->forks = malloc(sizeof(sem_t));
+	//t->write = malloc(sizeof(sem_t));
+	//t->tunnel = malloc(sizeof(sem_t));
 	t->forks = sem_open("/s_forks", O_CREAT, 01411, t->num);
 	t->write = sem_open("/s_write", O_CREAT, 01411, 1);
 	t->tunnel = sem_open("/s_tunnel", O_CREAT, 01411, 1);
@@ -154,6 +155,7 @@ int starvation(t_table *t)
 int main(int argc, char const *argv[])
 {
 	t_table *t;
+	int i;
 	//pthread_t *threads;
 
 
@@ -175,7 +177,21 @@ int main(int argc, char const *argv[])
 	//join?
 	//pthread_join(threads[0], NULL);
 	//free
-
+	i = 0;
+	while (i < t->num)
+	{
+		sem_close(t->philos[i]->alive);
+		sem_unlink("/s_alive");
+		free(t->philos[i++]);
+	}
+	sem_close(t->write);
+	sem_close(t->forks);
+	sem_close(t->tunnel);
+	sem_unlink("/s_forks");
+	sem_unlink("/s_write");
+	sem_unlink("/s_tunnel");
+	free(t->philos);
+	free(t);
 	return(0);
 
 }

@@ -54,7 +54,7 @@ void p_eat (t_philo *p)
 	printf("%lu %d is eating\n", timestamp(p), p->id);
 	sem_post(p->write);
 	p->last_eaten = get_time();
-	//sem_post(p->alive);
+	sem_post(p->alive);
 	zsleep(p->eat);
 
 }
