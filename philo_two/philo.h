@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/time.h>
+#include <fcntl.h> 
+#include <sys/stat.h>
 
 typedef struct s_philo
 {
@@ -19,6 +21,7 @@ typedef struct s_philo
 	int times;
 	sem_t *forks;
 	sem_t *write;
+	sem_t *tunnel;
 	// sem_t *alive;
 }	t_philo;
 
@@ -33,6 +36,7 @@ typedef struct s_table
 	t_philo **philos;
 	sem_t *forks;
 	sem_t *write;
+	sem_t *tunnel;
 }	t_table;
 
 

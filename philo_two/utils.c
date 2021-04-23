@@ -45,8 +45,9 @@ void p_sleep(t_philo *p)
 
 void p_eat (t_philo *p)
 {
-
+	
 	sem_wait(p->write);
+	//printf("ay\n");
 	//write(1, "STARTEAT\n", 9);
 	printf("%lu %d has taken a fork\n", timestamp(p), p->id);
 	printf("%lu %d has taken a fork\n", timestamp(p), p->id);
