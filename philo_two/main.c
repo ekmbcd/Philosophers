@@ -221,7 +221,7 @@ int main(int argc, char const *argv[])
 		i++;
 	}
 	//printf("??\n");
-	usleep(1000);
+	//usleep(1000);
 	while (--i)
 		sem_post(t->forks);
 

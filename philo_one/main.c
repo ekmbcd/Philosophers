@@ -241,7 +241,12 @@ int main(int argc, char const *argv[])
 	i = 0;
 	while (i < t->num)
 	{
-		pthread_cancel(threads[i]);
+		pthread_join(threads[i++], 0);
+		//printf("%i joined\n", i);
+	}
+	i = 0;
+	while (i < t->num)
+	{
 		pthread_mutex_destroy(&t->philos[i]->alive);
 		free(t->philos[i]);
 		pthread_mutex_destroy(&t->m_forks[i++]);
