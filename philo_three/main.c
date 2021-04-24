@@ -10,21 +10,16 @@ void *metaphysic(void *philo)
 
 	//printf("%d\n", p->times);
 
-	while (p->times != 0 && p->id != 0)
+	while (p->times != 0)
 	{
 
 		//if(start && p->id % 2 == 0)
 		//	usleep((p->eat) * 500);
-
 		sem_wait(p->tunnel);
-		//printf(">PID=%d\n", p->id);
 		sem_wait(p->forks);
 		sem_wait(p->forks);
-
 		sem_post(p->tunnel);
-
 		sem_wait(p->alive);
-
 		p_eat(p);
 		//printf("yo\n");
 		sem_post(p->forks);
@@ -75,7 +70,6 @@ pthread_t *genesys(t_table *t)
 	while (i < t->num)
 	{
 		pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]);
-		pthread_detach(threads[i]);
 		i++;
 	}
 	//free(threads);
@@ -118,20 +112,6 @@ t_table *init(int ac, const char **av)
 
 }
 
-void kill_all(t_table *t)
-{
-	int i;
-
-	i = 0;
-	while (i < t->num)
-	{
-		t->philos[i]->id = 0;
-		i++;
-		/* code */
-	}
-	//printf("killed all\n");
-}
-
 int starvation(t_table *t)
 {
 	int i;
@@ -148,22 +128,18 @@ int starvation(t_table *t)
 			if (t->philos[i]->times == 0)
 				continue;
 			done++;
-			sem_wait(t->philos[i]->alive);
+			//sem_wait(t->philos[i]->alive);
 //			now = get_time();
 			if (get_time() - t->philos[i]->last_eaten > t->die)
 			{
 				sem_wait(t->write);
-
 				//printf("<%lu>\n", now - t->start_time);
 				printf("%lu %d died\n", timestamp(t->philos[i]), i + 1);
-				kill_all(t);
-				sem_post(t->philos[i]->alive);
-				sem_post(t->write);
 				//all threads should be killed
 				//pthread_mutex_unlock(&(t->philos[i]->alive));
 				return (1);
 			}
-			sem_post(t->philos[i]->alive);
+			//sem_post(t->philos[i]->alive);
 		}
 		if (done == 0)
 		{
@@ -202,43 +178,19 @@ int main(int argc, char const *argv[])
 	//pthread_join(threads[0], NULL);
 	//free
 	i = 0;
-	usleep(100);
-
 	while (i < t->num)
 	{
-		pthread_join(threads[i++], 0);
-		//printf("%i joined\n", i);
-	}
-	i = 0;
-	while (i < t->num)
-	{
-
-
+		pthread_cancel(threads[i]);
 		sem_close(t->philos[i]->alive);
 		sem_unlink("/s_alive");
-
-		//free(t->philos[i]);
-		i++;
+		free(t->philos[i++]);
 	}
-	//printf("??\n");
-	usleep(1000);
-	while (--i)
-		sem_post(t->forks);
-
-	sem_close(t->forks);
-
-	sem_close(t->tunnel);
-
 	sem_close(t->write);
-
+	sem_close(t->forks);
+	sem_close(t->tunnel);
 	sem_unlink("/s_forks");
 	sem_unlink("/s_write");
 	sem_unlink("/s_tunnel");
-	while (i < t->num)
-	{
-		free(t->philos[i++]);
-	}
-
 	free(t->philos);
 	free(t);
 	free(threads);

@@ -33,37 +33,22 @@ unsigned long timestamp(t_philo *p)
 void p_sleep(t_philo *p)
 {
 	sem_wait(p->write);
-	if (p->id == 0)
-	{
-		sem_post(p->write);
-		return ;
-	}
 	printf("%lu %d is sleeping\n", timestamp(p), p->id);
 	sem_post(p->write);
 
 	zsleep(p->sleep);
 
 	sem_wait(p->write);
-	if (p->id == 0)
-	{
-		sem_post(p->write);
-		return ;
-	}
 	printf("%lu %d is thinking\n", timestamp(p), p->id);
 	sem_post(p->write);
 }
 
 void p_eat (t_philo *p)
 {
-	//printf(">EATPID=%d\n", p->id);
+	
 	sem_wait(p->write);
 	//printf("ay\n");
 	//write(1, "STARTEAT\n", 9);
-	if (p->id == 0)
-	{
-		sem_post(p->write);
-		return ;
-	}
 	printf("%lu %d has taken a fork\n", timestamp(p), p->id);
 	printf("%lu %d has taken a fork\n", timestamp(p), p->id);
 	printf("%lu %d is eating\n", timestamp(p), p->id);

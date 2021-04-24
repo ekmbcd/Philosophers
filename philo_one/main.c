@@ -131,7 +131,7 @@ void create_forks(t_table *t)
 	// }
 }
 
-void genesys(t_table *t)
+pthread_t *genesys(t_table *t)
 {
 	int i;
 	pthread_t *threads;
@@ -141,10 +141,11 @@ void genesys(t_table *t)
 	while (i < t->num)
 	{
 		pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]);
+		pthread_detach(threads[i]);
 		i++;
 	}
-	free(threads);
-	//return (threads);
+	//free(threads);
+	return (threads);
 }
 
 t_table *init(int ac, const char **av)
@@ -219,7 +220,7 @@ int main(int argc, char const *argv[])
 {
 	t_table *t;
 	int i;
-	//pthread_t *threads;
+	pthread_t *threads;
 
 
 
@@ -230,7 +231,7 @@ int main(int argc, char const *argv[])
 		return(1);
 	}
 	//start threads
-	genesys(t);
+	threads = genesys(t);
 
 	//check aliveness
 	starvation(t);
@@ -240,6 +241,7 @@ int main(int argc, char const *argv[])
 	i = 0;
 	while (i < t->num)
 	{
+		pthread_cancel(threads[i]);
 		pthread_mutex_destroy(&t->philos[i]->alive);
 		free(t->philos[i]);
 		pthread_mutex_destroy(&t->m_forks[i++]);
@@ -248,6 +250,7 @@ int main(int argc, char const *argv[])
 	free(t->philos);
 	free(t->m_forks);
 	free(t);
+	free(threads);
 	return(0);
 
 }
