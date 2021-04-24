@@ -20,8 +20,8 @@ void *metaphysic(void *philo)
 		}
 		else
 		{
-			if (start)
-				usleep((p->eat) * 500);
+			// if (start)
+			// 	usleep((p->eat) * 500);
 			pthread_mutex_lock(&(p->m_forks[p->left]));
 			pthread_mutex_lock(&(p->m_forks[p->right]));
 		}
@@ -39,18 +39,19 @@ void *metaphysic(void *philo)
 		// 	write(1, "pari\n", 5);
 
 		// pthread_mutex_unlock(p->m_write);
-//		if(p->id % 2)
-//		{
+		// if(p->id % 2)
+		// {
 			//pthread_mutex_lock(p->m_write);
-			pthread_mutex_unlock(&(p->m_forks[p->right]));
+			
 			//printf("%lu %d FORKETTA DESTRA\n", timestamp(p), p->id);
 			pthread_mutex_unlock(&(p->m_forks[p->left]));
 			//printf("%lu %d FORKETTA SINISTRA\n", timestamp(p), p->id);
 			//pthread_mutex_unlock(p->m_write);
-
-		// }
+			pthread_mutex_unlock(&(p->m_forks[p->right]));
+		//  }
 		// else
 		// {
+			
 		// 	//pthread_mutex_lock(p->m_write);
 		// 	pthread_mutex_unlock(&(p->m_forks[p->right]));
 		// 	//printf("%lu %d FORKETTA DESTRA\n", timestamp(p), p->id);
@@ -239,11 +240,14 @@ int main(int argc, char const *argv[])
 	//pthread_join(threads[0], NULL);
 	//free
 	i = 0;
-	while (i < t->num)
-	{
-		pthread_join(threads[i++], 0);
-		//printf("%i joined\n", i);
-	}
+	//printf("end\n");
+	// while (i < t->num)
+	// {
+	// 	printf("%i joined\n", i);
+	// 	pthread_join(threads[i], 0);
+	// 	printf("%i joined\n", i);
+	// 	i++;
+	// }
 	i = 0;
 	while (i < t->num)
 	{

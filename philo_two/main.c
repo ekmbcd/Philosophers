@@ -202,7 +202,7 @@ int main(int argc, char const *argv[])
 	//pthread_join(threads[0], NULL);
 	//free
 	i = 0;
-	usleep(100);
+	//usleep(100);
 
 	while (i < t->num)
 	{
