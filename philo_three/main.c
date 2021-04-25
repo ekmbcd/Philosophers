@@ -170,7 +170,7 @@ int main(int argc, char const *argv[])
 	t = init(argc, argv);
 	if (t == 0)
 	{
-		printf("Wrong input.\n");
+		printf("Error.\n");
 		return(1);
 	}
 	generate_philos(t);

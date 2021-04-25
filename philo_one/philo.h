@@ -11,17 +11,14 @@ typedef struct s_philo
 {
 	int	id;
 	unsigned long last_eaten;
-	//int alive;
 	int left;
 	int right;
 	unsigned long start_time;
 	int eat;
 	int sleep;
 	int times;
-//	char *forks;
 	pthread_mutex_t *m_forks;
 	pthread_mutex_t *m_write;
-//	pthread_mutex_t *m_ego;
 	pthread_mutex_t alive;
 }	t_philo;
 
@@ -34,10 +31,8 @@ typedef struct s_table
 	int sleep;
 	int times;
 	t_philo **philos;
-	//char *forks;
 	pthread_mutex_t *m_forks;
 	pthread_mutex_t m_write;
-//	pthread_mutex_t m_ego;
 }	t_table;
 
 
@@ -47,5 +42,8 @@ unsigned long timestamp(t_philo *p);
 void p_sleep(t_philo *p);
 void p_eat (t_philo *p);
 void zsleep(unsigned long micro);
+int genesys(t_table *t);
+t_table *init(int ac, const char **av);
+void *metaphysic(void *philo);
 
 #endif
