@@ -14,14 +14,15 @@ void *metaphysic(void *philo)
 		//check if left fork is free //check if right fork is free
 		if(p->id % 2)
 		{
-
-			pthread_mutex_lock(&(p->m_forks[p->right]));
 			pthread_mutex_lock(&(p->m_forks[p->left]));
+			pthread_mutex_lock(&(p->m_forks[p->right]));
+			
 		}
 		else
 		{
-			// if (start)
-			// 	usleep((p->eat) * 500);
+			if (start)
+				usleep((p->eat) * 500);
+			
 			pthread_mutex_lock(&(p->m_forks[p->left]));
 			pthread_mutex_lock(&(p->m_forks[p->right]));
 		}

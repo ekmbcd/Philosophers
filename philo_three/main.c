@@ -1,6 +1,6 @@
 #include "philo.h"
 
-void *metaphysic(void *philo)
+int metaphysic(void *philo)
 {
 	t_philo *p;
 	int start;
@@ -47,33 +47,42 @@ void generate_philos(t_table *t)
 		t->philos[i]->start_time = t->start_time;
 		t->philos[i]->eat = t->eat;
 		t->philos[i]->sleep = t->sleep;
+		t->philos[i]->die = t->die;
 		t->philos[i]->times = t->times;
 		t->philos[i]->forks = t->forks;
 		t->philos[i]->write = t->write;
 		t->philos[i]->tunnel = t->tunnel;
 		//sem_init(&t->philos[i]->alive, 0, 1);
 		sem_unlink("/s_alive");
-		t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, t->num);
+		t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, 1);
 
 		// t->philos[i]->m_ego = &t->m_ego;
 	}
 }
 
 
-pthread_t *genesys(t_table *t)
+void genesys(t_table *t)
 {
 	int i;
-	pthread_t *threads;
+	pthread_t thread;
+	//int pid;
 
 	i = 0;
-	threads = malloc(sizeof(pthread_t) * t->num);
 	while (i < t->num)
 	{
-		pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]);
+		t->philos[i]->pid = fork();
+		if (t->philos[i]->pid == 0)
+		{
+			//printf(">created process %d\n", i);
+			pthread_create(&thread, NULL, (void *)starvation, (void *)t->philos[i]);
+			pthread_detach(thread);
+			metaphysic(t->philos[i]);
+			exit(42);
+		}
 		i++;
 	}
 	//free(threads);
-	return (threads);
+	return ;
 }
 
 t_table *init(int ac, const char **av)
@@ -112,42 +121,39 @@ t_table *init(int ac, const char **av)
 
 }
 
-int starvation(t_table *t)
+int starvation(t_philo *p)
 {
 	int i;
 	unsigned long now;
 	int done;
 
+	unsigned long test;
+
+	//zsleep(p->die >> 1);
+
 	while (1)
 	{
-
-		i = -1;
-		done = 0;
-		while (++i < t->num)
-		{
-			if (t->philos[i]->times == 0)
-				continue;
-			done++;
-			//sem_wait(t->philos[i]->alive);
+		sem_wait(p->alive);
 //			now = get_time();
-			if (get_time() - t->philos[i]->last_eaten > t->die)
-			{
-				sem_wait(t->write);
-				//printf("<%lu>\n", now - t->start_time);
-				printf("%lu %d died\n", timestamp(t->philos[i]), i + 1);
-				//all threads should be killed
-				//pthread_mutex_unlock(&(t->philos[i]->alive));
-				return (1);
-			}
-			//sem_post(t->philos[i]->alive);
+		if ((test = get_time() - p->last_eaten) > p->die)
+		{
+			sem_wait(p->write);
+			//printf("<%lu>\n", now - t->start_time);
+			printf("%lu %d died\n", timestamp(p), p->id);
+			printf("last eat: %lu die: %d \n", test, p->die);
+			//kill(p->pid, SIGINT);
+			//all threads should be killed
+			//pthread_mutex_unlock(&(t->philos[i]->alive));
+			exit(1);
 		}
-		if (done == 0)
+		sem_post(p->alive);
+		if (p->times == 0)
 		{
 			//sem_wait(&t->write);
 			//printf("yo\n");
-			return (0);
+			exit(0);
 		}
-
+		usleep(500);
 	}
 	return(0);
 }
@@ -156,7 +162,8 @@ int main(int argc, char const *argv[])
 {
 	t_table *t;
 	int i;
-	pthread_t *threads;
+	int status;
+	int returned;
 
 
 
@@ -169,10 +176,34 @@ int main(int argc, char const *argv[])
 	generate_philos(t);
 	//start threads
 	//printf("yo\n");
-	threads = genesys(t);
+	genesys(t);
+	int res = waitpid(-1,&status,0);
+	printf("waitpid = %d status %d\n", res);
+	if (WIFEXITED(status)){
+      returned = WEXITSTATUS(status);
+      printf("exited normally with status %d\n",returned);
+	}
+	i = 0;
+	if (returned == 1)
+	{
+
+		while (i < t->num)
+		{
+			//printf("killed %d\n", i);
+			kill(t->philos[i]->pid, SIGINT);
+			i++;
+		}
+	}
+	//printf("almost\n");
+	else
+		while (waitpid(-1,0,0) != -1 || errno != ECHILD)
+		{
+			//printf("waited for child\n");
+		}
+	printf("done waiting\n");
 
 	//check aliveness
-	starvation(t);
+	//starvation(t);
 	//usleep(1000000);
 	//join?
 	//pthread_join(threads[0], NULL);
@@ -180,7 +211,7 @@ int main(int argc, char const *argv[])
 	i = 0;
 	while (i < t->num)
 	{
-		pthread_cancel(threads[i]);
+		//printf("aa\n");
 		sem_close(t->philos[i]->alive);
 		sem_unlink("/s_alive");
 		free(t->philos[i++]);
@@ -193,7 +224,6 @@ int main(int argc, char const *argv[])
 	sem_unlink("/s_tunnel");
 	free(t->philos);
 	free(t);
-	free(threads);
 	return(0);
 
 }

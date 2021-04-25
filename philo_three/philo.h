@@ -9,15 +9,20 @@
 #include <sys/time.h>
 #include <fcntl.h> 
 #include <sys/stat.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <errno.h>
 
 typedef struct s_philo
 {
 	int	id;
+	int pid;
 	unsigned long last_eaten;
 	//int alive;
 	unsigned long start_time;
 	int eat;
 	int sleep;
+	int die;
 	int times;
 	sem_t *forks;
 	sem_t *write;
@@ -46,5 +51,6 @@ unsigned long timestamp(t_philo *p);
 void p_sleep(t_philo *p);
 void p_eat (t_philo *p);
 void zsleep(unsigned long micro);
+int starvation(t_philo *p);
 
 #endif

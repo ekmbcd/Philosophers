@@ -58,7 +58,7 @@ void generate_philos(t_table *t)
 		t->philos[i]->tunnel = t->tunnel;
 		//sem_init(&t->philos[i]->alive, 0, 1);
 		sem_unlink("/s_alive");
-		t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, t->num);
+		t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, 1);
 
 		// t->philos[i]->m_ego = &t->m_ego;
 	}
