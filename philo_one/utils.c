@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ade-feli <ade-feli@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/04/26 11:06:08 by ade-feli          #+#    #+#             */
+/*   Updated: 2021/04/26 11:06:10 by ade-feli         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-int ft_atoi(const char *str)
+int	ft_atoi(const char *str)
 {
 	int			res;
 	const char	*pointer;
@@ -19,30 +31,30 @@ int ft_atoi(const char *str)
 	return (res);
 }
 
-unsigned long timestamp(t_philo *p)
+unsigned long	timestamp(t_philo *p)
 {
-	unsigned long now;
-	unsigned long relative;
+	unsigned long	now;
+	unsigned long	relative;
 
 	now = get_time();
 	relative = now - p->start_time;
 	return (relative);
 }
 
-unsigned long get_time(void)
+unsigned long	get_time(void)
 {
-	unsigned long time;
-	struct timeval tv;
+	unsigned long	time;
+	struct timeval	tv;
 
 	gettimeofday(&tv, NULL);
 	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	return(time);
+	return (time);
 }
 
-void zsleep(unsigned long micro)
+void	zsleep(unsigned long micro)
 {
-	unsigned long target;
-	unsigned long start;
+	unsigned long	target;
+	unsigned long	start;
 
 	start = get_time();
 	target = start + micro;
@@ -50,7 +62,7 @@ void zsleep(unsigned long micro)
 	{
 		start = get_time();
 		if (start >= target)
-			return;
+			return ;
 		usleep(((target - start) >> 1) * 1000);
 	}
 }

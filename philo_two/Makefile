@@ -6,7 +6,7 @@
 #    By: ade-feli <ade-feli@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/04/26 11:01:44 by ade-feli          #+#    #+#              #
-#    Updated: 2021/04/26 11:01:56 by ade-feli         ###   ########.fr        #
+#    Updated: 2021/04/26 13:02:52 by ade-feli         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ RM				= rm -f
 CFLAGS			= -Wall -Wextra -Werror
 LIBS			= -lpthread
 
-NAME			= philo_one
+NAME			= philo_two
 
 all:			$(NAME)
 

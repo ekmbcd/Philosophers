@@ -5,12 +5,33 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ade-feli <ade-feli@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/04/26 10:59:52 by ade-feli          #+#    #+#             */
-/*   Updated: 2021/04/26 10:59:56 by ade-feli         ###   ########.fr       */
+/*   Created: 2021/04/26 12:57:03 by ade-feli          #+#    #+#             */
+/*   Updated: 2021/04/26 13:01:25 by ade-feli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void	p_sleep(t_philo *p)
+{
+	sem_wait(p->write);
+	if (p->id == 0)
+	{
+		sem_post(p->write);
+		return ;
+	}
+	printf("%lu %d is sleeping\n", timestamp(p), p->id);
+	sem_post(p->write);
+	zsleep(p->sleep);
+	sem_wait(p->write);
+	if (p->id == 0)
+	{
+		sem_post(p->write);
+		return ;
+	}
+	printf("%lu %d is thinking\n", timestamp(p), p->id);
+	sem_post(p->write);
+}
 
 int	generate_philos(t_table *t)
 {
@@ -27,32 +48,15 @@ int	generate_philos(t_table *t)
 			return (1);
 		t->philos[i]->id = i + 1;
 		t->philos[i]->last_eaten = t->start_time;
-		t->philos[i]->right = i;
-		t->philos[i]->left = (i + 1) % t->num;
 		t->philos[i]->start_time = t->start_time;
 		t->philos[i]->eat = t->eat;
 		t->philos[i]->sleep = t->sleep;
 		t->philos[i]->times = t->times;
-		t->philos[i]->m_forks = t->m_forks;
-		t->philos[i]->m_write = &t->m_write;
-		pthread_mutex_init(&t->philos[i]->alive, NULL);
-	}
-	return (0);
-}
-
-int	create_forks(t_table *t)
-{
-	int	i;
-
-	i = 0;
-	t->m_forks = malloc(sizeof(pthread_mutex_t) * t->num);
-	if (!t->m_forks)
-		return (1);
-	pthread_mutex_init(&t->m_write, NULL);
-	while (i < t->num)
-	{
-		pthread_mutex_init(&t->m_forks[i], NULL);
-		i++;
+		t->philos[i]->forks = t->forks;
+		t->philos[i]->write = t->write;
+		t->philos[i]->tunnel = t->tunnel;
+		sem_unlink("/s_alive");
+		t->philos[i]->alive = sem_open("/s_alive", O_CREAT, 01411, 1);
 	}
 	return (0);
 }
@@ -68,12 +72,26 @@ int	genesys(t_table *t)
 		return (1);
 	while (i < t->num)
 	{
-		if (pthread_create(&threads[i], NULL, metaphysic, (void *)t->philos[i]))
+		if (pthread_create(&threads[i], NULL, metaphysic,
+				(void *)t->philos[i]))
 			return (1);
 		pthread_detach(threads[i]);
 		i++;
 	}
 	free(threads);
+	return (0);
+}
+
+int	init_semaphores(t_table *t)
+{
+	sem_unlink("/s_forks");
+	sem_unlink("/s_write");
+	sem_unlink("/s_tunnel");
+	t->forks = sem_open("/s_forks", O_CREAT, 01411, t->num);
+	t->write = sem_open("/s_write", O_CREAT, 01411, 1);
+	t->tunnel = sem_open("/s_tunnel", O_CREAT, 01411, 1);
+	if (!t->forks || !t->write || !t->tunnel)
+		return (1);
 	return (0);
 }
 
@@ -101,7 +119,7 @@ t_table	*init(int ac, const char **av)
 		return (0);
 	}
 	t->start_time = get_time();
-	if (create_forks(t) || generate_philos(t))
+	if (init_semaphores(t) || generate_philos(t))
 		return (0);
 	return (t);
 }
